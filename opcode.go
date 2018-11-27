@@ -181,17 +181,19 @@ func opcodeDXYN(cpu *CPU, opcode uint16) {
 
 func opcodeEX9E(cpu *CPU, opcode uint16) {
 	X := (opcode & 0x0f00) >> 8
-	if keyPressed(cpu.V[X]) {
+	/*if keyPressed(cpu.V[X]) {
 		cpu.pc += 2
-	}
+	}*/
+	println(X)
 	cpu.pc += 2
 }
 
 func opcodeEXA1(cpu *CPU, opcode uint16) {
 	X := (opcode & 0x0f00) >> 8
-	if !keyPressed(cpu.V[X]) {
+	/*if !keyPressed(cpu.V[X]) {
 		cpu.pc += 2
-	}
+	}*/
+	println(X)
 	cpu.pc += 2
 }
 
@@ -203,7 +205,8 @@ func opcodeFX07(cpu *CPU, opcode uint16) {
 
 func opcodeFX0A(cpu *CPU, opcode uint16) {
 	X := (opcode & 0x0f00) >> 8
-	cpu.V[X] = getKeyPressed()
+	//cpu.V[X] = getKeyPressed()
+	println(X)
 	cpu.pc += 2
 }
 
@@ -234,9 +237,9 @@ func opcodeFX29(cpu *CPU, opcode uint16) {
 func opcodeFX33(cpu *CPU, opcode uint16) {
 	X := (opcode & 0x0f00) >> 8
 	VX := cpu.V[X]
-	cpu.memory[cpu.I] = VX / 100
-	cpu.memory[cpu.I+1] = (VX / 10) % 10
-	cpu.memory[cpu.I+2] = VX % 10
+	cpu.Memory[cpu.I] = VX / 100
+	cpu.Memory[cpu.I+1] = (VX / 10) % 10
+	cpu.Memory[cpu.I+2] = VX % 10
 	cpu.pc += 2
 }
 
@@ -244,7 +247,7 @@ func opcodeFX55(cpu *CPU, opcode uint16) {
 	X := (opcode & 0x0f00) >> 8
 	pointer := cpu.I
 	for i := uint16(0); i <= X; i++ {
-		cpu.memory[pointer+i] = cpu.V[i]
+		cpu.Memory[pointer+i] = cpu.V[i]
 	}
 	cpu.pc += 2
 }
@@ -253,7 +256,7 @@ func opcodeFX65(cpu *CPU, opcode uint16) {
 	X := (opcode & 0x0f00) >> 8
 	pointer := cpu.I
 	for i := uint16(0); i <= X; i++ {
-		cpu.V[i] = cpu.memory[pointer+i]
+		cpu.V[i] = cpu.Memory[pointer+i]
 	}
 	cpu.pc += 2
 }
