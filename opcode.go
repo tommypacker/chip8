@@ -237,9 +237,9 @@ func opcodeFX29(cpu *CPU, opcode uint16) {
 func opcodeFX33(cpu *CPU, opcode uint16) {
 	X := (opcode & 0x0f00) >> 8
 	VX := cpu.V[X]
-	cpu.Memory[cpu.I] = VX / 100
-	cpu.Memory[cpu.I+1] = (VX / 10) % 10
-	cpu.Memory[cpu.I+2] = VX % 10
+	cpu.memory[cpu.I] = VX / 100
+	cpu.memory[cpu.I+1] = (VX / 10) % 10
+	cpu.memory[cpu.I+2] = VX % 10
 	cpu.pc += 2
 }
 
@@ -247,7 +247,7 @@ func opcodeFX55(cpu *CPU, opcode uint16) {
 	X := (opcode & 0x0f00) >> 8
 	pointer := cpu.I
 	for i := uint16(0); i <= X; i++ {
-		cpu.Memory[pointer+i] = cpu.V[i]
+		cpu.memory[pointer+i] = cpu.V[i]
 	}
 	cpu.pc += 2
 }
@@ -256,7 +256,7 @@ func opcodeFX65(cpu *CPU, opcode uint16) {
 	X := (opcode & 0x0f00) >> 8
 	pointer := cpu.I
 	for i := uint16(0); i <= X; i++ {
-		cpu.V[i] = cpu.Memory[pointer+i]
+		cpu.V[i] = cpu.memory[pointer+i]
 	}
 	cpu.pc += 2
 }

@@ -8,7 +8,7 @@ import (
 CPU contains all components of a chip8 cpu
 */
 type CPU struct {
-	Memory        [4096]byte
+	memory        [4096]byte
 	V             [16]byte
 	I             uint16
 	pc            uint16
@@ -30,7 +30,7 @@ func Reset(cpu *CPU) {
 
 	// Load fontset
 	for i := 0; i < 80; i++ {
-		cpu.Memory[i] = fontset[i]
+		cpu.memory[i] = fontset[i]
 	}
 
 	// Load program into memory
@@ -50,12 +50,12 @@ func Reset(cpu *CPU) {
 	file.Read(buffer)
 
 	for i := 0; i < len(buffer); i++ {
-		cpu.Memory[i+512] = buffer[i]
+		cpu.memory[i+512] = buffer[i]
 	}
 }
 
 func EmulateCycle(cpu *CPU) {
-	opcode := uint16(cpu.Memory[cpu.pc])<<8 | uint16(cpu.Memory[cpu.pc+1])
+	opcode := uint16(cpu.memory[cpu.pc])<<8 | uint16(cpu.memory[cpu.pc+1])
 
 	switch opcode & 0xF000 {
 	case 0x0000:
