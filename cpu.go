@@ -18,7 +18,7 @@ type CPU struct {
 	stack         []uint16
 	delayTimer    byte
 	soundTimer    byte
-	screen        [64][32]byte
+	screen        [64 * 32]byte
 	ScreenUpdated bool
 	curKey        byte
 }
@@ -73,8 +73,13 @@ func CurKey(cpu *CPU) byte {
 	return cpu.curKey
 }
 
+func Screen(cpu *CPU) [64 * 32]byte {
+	return cpu.screen
+}
+
 func EmulateCycle(cpu *CPU) {
 	opcode := uint16(cpu.memory[cpu.pc])<<8 | uint16(cpu.memory[cpu.pc+1])
+	cpu.ScreenUpdated = false
 
 	switch opcode & 0xF000 {
 	case 0x0000:

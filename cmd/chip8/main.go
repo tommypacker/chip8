@@ -1,11 +1,11 @@
 package main
 
 import (
-	"image"
-
 	"github.com/faiface/pixel"
+	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/tommypacker/chip8"
+	"golang.org/x/image/colornames"
 )
 
 func run() {
@@ -16,7 +16,7 @@ func run() {
 	// Create window
 	cfg := pixelgl.WindowConfig{
 		Title:  "Chip 8",
-		Bounds: pixel.R(0, 0, 256, 128),
+		Bounds: pixel.R(0, 0, 512, 256),
 		VSync:  true,
 	}
 	win, err := pixelgl.NewWindow(cfg)
@@ -25,20 +25,17 @@ func run() {
 	}
 
 	// Draw board
-	img := image.NewGray(image.Rect(0, 0, 256, 128))
-	p, _ := drawBoard(img)
-	s := pixel.NewSprite(p, p.Bounds())
-	s.Draw(win, pixel.IM.Moved(win.Bounds().Center()))
+	drawBoard(cpu, win)
 	for !win.Closed() {
 		chip8.EmulateCycle(cpu)
 
 		if cpu.ScreenUpdated {
+			drawBoard(cpu, win)
 			win.Update()
 		} else {
 			win.UpdateInput()
 		}
 		handleKeyPress(cpu, win)
-		print(chip8.CurKey(cpu))
 	}
 }
 
@@ -80,15 +77,24 @@ func handleKeyPress(cpu *chip8.CPU, win *pixelgl.Window) {
 	}
 }
 
-func drawBoard(img *image.Gray) (pixel.Picture, error) {
-	pixels := make([]byte, 256*128)
-	for i := 0; i < 256; i++ {
-		for j := 0; j < 128; j++ {
-			pixels[i*128+j] = 128
+func drawBoard(cpu *chip8.CPU, win *pixelgl.Window) {
+	win.Clear(colornames.Black)
+	imd := imdraw.New(nil)
+	imd.Color = pixel.RGB(1, 1, 1)
+	screen := chip8.Screen(cpu)
+	width, height := 8.0, 8.0
+
+	for x := 0; x < 64; x++ {
+		for y := 0; y < 32; y++ {
+			if screen[(31-y)*64+x] == 1 {
+				imd.Push(pixel.V(width*float64(x), height*float64(y)))
+				imd.Push(pixel.V(width*float64(x)+width, height*float64(y)+height))
+				imd.Rectangle(0)
+			}
 		}
 	}
-	img.Pix = pixels
-	return pixel.PictureDataFromImage(img), nil
+	imd.Draw(win)
+	win.Update()
 }
 
 func main() {

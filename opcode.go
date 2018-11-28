@@ -174,7 +174,7 @@ func opcodeDXYN(cpu *CPU, opcode uint16) {
 	X := (opcode & 0x0f00) >> 8
 	Y := (opcode & 0x00f0) >> 4
 	N := (opcode & 0x000f)
-	drawSprite(cpu, cpu.V[X], cpu.V[Y], byte(N))
+	drawSprite(cpu, cpu.V[X], cpu.V[Y], N)
 	cpu.ScreenUpdated = true
 	cpu.pc += 2
 }
