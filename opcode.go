@@ -175,24 +175,24 @@ func opcodeDXYN(cpu *CPU, opcode uint16) {
 	Y := (opcode & 0x00f0) >> 4
 	N := (opcode & 0x000f)
 	drawSprite(cpu, cpu.V[X], cpu.V[Y], byte(N))
-	cpu.screenUpdated = true
+	cpu.ScreenUpdated = true
 	cpu.pc += 2
 }
 
 func opcodeEX9E(cpu *CPU, opcode uint16) {
 	X := (opcode & 0x0f00) >> 8
-	/*if keyPressed(cpu.V[X]) {
+	if cpu.V[X] == cpu.curKey {
 		cpu.pc += 2
-	}*/
+	}
 	println(X)
 	cpu.pc += 2
 }
 
 func opcodeEXA1(cpu *CPU, opcode uint16) {
 	X := (opcode & 0x0f00) >> 8
-	/*if !keyPressed(cpu.V[X]) {
+	if cpu.V[X] != cpu.curKey {
 		cpu.pc += 2
-	}*/
+	}
 	println(X)
 	cpu.pc += 2
 }
@@ -205,7 +205,7 @@ func opcodeFX07(cpu *CPU, opcode uint16) {
 
 func opcodeFX0A(cpu *CPU, opcode uint16) {
 	X := (opcode & 0x0f00) >> 8
-	//cpu.V[X] = getKeyPressed()
+	cpu.V[X] = cpu.curKey
 	println(X)
 	cpu.pc += 2
 }

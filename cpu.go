@@ -4,6 +4,9 @@ import (
 	"os"
 )
 
+// NullKey is a byte that signals when no key is pressed
+var NullKey = byte(0)
+
 /*
 CPU contains all components of a chip8 cpu
 */
@@ -16,10 +19,11 @@ type CPU struct {
 	delayTimer    byte
 	soundTimer    byte
 	screen        [64][32]byte
-	screenUpdated bool
+	ScreenUpdated bool
+	curKey        byte
 }
 
-func Reset(cpu *CPU) {
+func Initialize(cpu *CPU) {
 	// Reset CPU
 	cpu.I = 0
 	cpu.pc = 0x200
@@ -27,6 +31,9 @@ func Reset(cpu *CPU) {
 		cpu.V[i] = 0
 	}
 	clearScreen(cpu)
+
+	// Set key to NullKey
+	cpu.curKey = NullKey
 
 	// Load fontset
 	for i := 0; i < 80; i++ {
@@ -52,6 +59,18 @@ func Reset(cpu *CPU) {
 	for i := 0; i < len(buffer); i++ {
 		cpu.memory[i+512] = buffer[i]
 	}
+}
+
+func SetKey(cpu *CPU, newKey byte) {
+	cpu.curKey = newKey
+}
+
+func ResetKey(cpu *CPU) {
+	cpu.curKey = NullKey
+}
+
+func CurKey(cpu *CPU) byte {
+	return cpu.curKey
 }
 
 func EmulateCycle(cpu *CPU) {
