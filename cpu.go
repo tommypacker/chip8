@@ -2,6 +2,7 @@ package chip8
 
 import (
 	"os"
+	"time"
 )
 
 // NullKey is a byte that signals when no key is pressed
@@ -22,6 +23,7 @@ type CPU struct {
 	screen        [64 * 32]byte
 	screenUpdated bool
 	key           [16]byte
+	timerClock    *time.Ticker
 }
 
 func Initialize(cpu *CPU) {
@@ -31,9 +33,7 @@ func Initialize(cpu *CPU) {
 	cpu.stack = [16]uint16{}
 	cpu.V = [16]byte{}
 	cpu.screen = [64 * 32]byte{}
-	for i := 0; i < 16; i++ {
-		cpu.V[i] = 0
-	}
+	cpu.timerClock = time.NewTicker(time.Second / 60)
 
 	// Load fontset
 	for i := 0; i < 80; i++ {
@@ -131,7 +131,12 @@ func EmulateCycle(cpu *CPU) {
 		println("Unknown opcode")
 	}
 
-	if cpu.delayTimer > 0 {
-		cpu.delayTimer--
+	// Don't block for timer
+	select {
+	case <-cpu.timerClock.C:
+		if cpu.delayTimer > 0 {
+			cpu.delayTimer--
+		}
+	default:
 	}
 }
