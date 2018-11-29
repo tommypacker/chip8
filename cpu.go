@@ -15,25 +15,25 @@ type CPU struct {
 	V             [16]byte
 	I             uint16
 	pc            uint16
-	stack         []uint16
+	stack         [16]uint16
+	sp            byte
 	delayTimer    byte
 	soundTimer    byte
 	screen        [64 * 32]byte
-	ScreenUpdated bool
-	curKey        byte
+	screenUpdated bool
+	key           [16]byte
 }
 
 func Initialize(cpu *CPU) {
-	// Reset CPU
 	cpu.I = 0
 	cpu.pc = 0x200
+	cpu.sp = 0
+	cpu.stack = [16]uint16{}
+	cpu.V = [16]byte{}
+	cpu.screen = [64 * 32]byte{}
 	for i := 0; i < 16; i++ {
 		cpu.V[i] = 0
 	}
-	clearScreen(cpu)
-
-	// Set key to NullKey
-	cpu.curKey = NullKey
 
 	// Load fontset
 	for i := 0; i < 80; i++ {
@@ -61,38 +61,26 @@ func Initialize(cpu *CPU) {
 	}
 }
 
-func SetKey(cpu *CPU, newKey byte) {
-	cpu.curKey = newKey
-}
-
-func ResetKey(cpu *CPU) {
-	cpu.curKey = NullKey
-}
-
-func CurKey(cpu *CPU) byte {
-	return cpu.curKey
+func SetKey(cpu *CPU, index byte) {
+	cpu.key[index] = 1
 }
 
 func Screen(cpu *CPU) [64 * 32]byte {
 	return cpu.screen
 }
 
+func DrawFlag(cpu *CPU) bool {
+	flag := cpu.screenUpdated
+	cpu.screenUpdated = false
+	return flag
+}
+
 func EmulateCycle(cpu *CPU) {
 	opcode := uint16(cpu.memory[cpu.pc])<<8 | uint16(cpu.memory[cpu.pc+1])
-	cpu.ScreenUpdated = false
 
 	switch opcode & 0xF000 {
 	case 0x0000:
-		switch opcode & 0x000F {
-		case 0x0000:
-			opcode00E0(cpu, opcode)
-			break
-		case 0x000E:
-			opcode00EE(cpu, opcode)
-			break
-		default:
-			println("Unknown opcode")
-		}
+		opcode00NN(cpu, opcode)
 		break
 	case 0x1000:
 		opcode1NNN(cpu, opcode)
@@ -116,37 +104,7 @@ func EmulateCycle(cpu *CPU) {
 		opcode7XNN(cpu, opcode)
 		break
 	case 0x8000:
-		switch opcode & 0x000F {
-		case 0x0000:
-			opcode8XY0(cpu, opcode)
-			break
-		case 0x0001:
-			opcode8XY1(cpu, opcode)
-			break
-		case 0x0002:
-			opcode8XY2(cpu, opcode)
-			break
-		case 0x0003:
-			opcode8XY3(cpu, opcode)
-			break
-		case 0x0004:
-			opcode8XY4(cpu, opcode)
-			break
-		case 0x0005:
-			opcode8XY5(cpu, opcode)
-			break
-		case 0x0006:
-			opcode8XY6(cpu, opcode)
-			break
-		case 0x0007:
-			opcode8XY7(cpu, opcode)
-			break
-		case 0x000E:
-			opcode8XYE(cpu, opcode)
-			break
-		default:
-			println("Unknown opcode")
-		}
+		opcode8NNN(cpu, opcode)
 		break
 	case 0x9000:
 		opcode9XY0(cpu, opcode)
@@ -164,55 +122,16 @@ func EmulateCycle(cpu *CPU) {
 		opcodeDXYN(cpu, opcode)
 		break
 	case 0xE000:
-		switch opcode & 0x000F {
-		case 0x000E:
-			opcodeEX9E(cpu, opcode)
-			break
-		case 0x0001:
-			opcodeEXA1(cpu, opcode)
-			break
-		default:
-			println("Unknown opcode")
-		}
+		opcodeENNN(cpu, opcode)
 		break
 	case 0xF000:
-		switch opcode & 0x000F {
-		case 0x0007:
-			opcodeFX07(cpu, opcode)
-			break
-		case 0x000A:
-			opcodeFX0A(cpu, opcode)
-			break
-		case 0x0008:
-			opcodeFX18(cpu, opcode)
-			break
-		case 0x000E:
-			opcodeFX1E(cpu, opcode)
-			break
-		case 0x0009:
-			opcodeFX29(cpu, opcode)
-			break
-		case 0x0003:
-			opcodeFX33(cpu, opcode)
-			break
-		case 0x0005:
-			switch opcode & 0x00F0 {
-			case 0x0010:
-				opcodeFX15(cpu, opcode)
-				break
-			case 0x0050:
-				opcodeFX55(cpu, opcode)
-				break
-			case 0x0060:
-				opcodeFX65(cpu, opcode)
-				break
-			default:
-				println("Unknown opcode")
-			}
-			break
-		}
+		opcodeFNNN(cpu, opcode)
 		break
 	default:
 		println("Unknown opcode")
+	}
+
+	if cpu.delayTimer > 0 {
+		cpu.delayTimer--
 	}
 }
